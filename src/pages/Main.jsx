@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import InputGroup from "react-bootstrap/InputGroup";
@@ -6,44 +6,42 @@ import ListGroup from "react-bootstrap/ListGroup";
 
 export default function Main() {
   const [searchText, setSearchText] = useState("");
-  const [data, setData] = useState({});
+  const [data, setData] = useState([]);
+  const [buttonClicked, setButtonClicked] = useState(false);
 
-  const url =
-    `https://recipe-by-api-ninjas.p.rapidapi.com/v1/recipe?query=${searchText}`;
-
-    // query=italian%20wedding%20soup
-  
-    const options = {
+  const url = `https://edamam-recipe-search.p.rapidapi.com/search?q=${searchText}&r=5`;
+  const options = {
     method: "GET",
     headers: {
       "X-RapidAPI-Key": "a777e9f51bmshbe718764991ce9cp1688bajsn080688213b13",
-      "X-RapidAPI-Host": "recipe-by-api-ninjas.p.rapidapi.com",
+      "X-RapidAPI-Host": "edamam-recipe-search.p.rapidapi.com",
     },
   };
 
   const getData = () => {
     fetch(url, options)
-      .then((response) => response.text())
+      .then((response) => response.json())
       .then((result) => {
-        setData(result);
-    })
+        setData(result.hits);
+      })
       .catch((error) => {
         console.error(error);
-    });
-  }
-  
-
-  // const alertClicked = () => {
-  //   alert("You clicked the third ListGroupItem");
-  // };
+      });
+  };
 
   const handleInputChange = (event) => {
     setSearchText(event.target.value);
-  }
+  };
 
-  // const handleSearchButtonClick = () => {
-  //   return console.log(searchText);
-  // }
+  const handleButtonClick = () => {
+    setButtonClicked(true);
+  };
+
+  useEffect(() => {
+    if (buttonClicked) {
+      getData();
+    }
+  }, [buttonClicked]);
 
   return (
     <>
@@ -54,24 +52,27 @@ export default function Main() {
           aria-describedby="basic-addon2"
           onChange={handleInputChange}
         />
-        <Button 
-          variant="outline-secondary" id="button-addon2"
-          onClick={() => getData()}
-          >
+        <Button
+          variant="outline-secondary"
+          id="button-addon2"
+          onClick={handleButtonClick}
+        >
           Buscar Receita
         </Button>
       </InputGroup>
-      <ListGroup defaultActiveKey="#link1">
-        <ListGroup.Item action href="#link1">
-          Link 1
-        </ListGroup.Item>
-        <ListGroup.Item action href="#link2" disabled>
-          Link 2
-        </ListGroup.Item>
-        <ListGroup.Item action href="#link2">
-          This one is a button
-        </ListGroup.Item>
-      </ListGroup>
+      {buttonClicked && (
+        <ListGroup defaultActiveKey="#link1">
+          {data.map((recipe, index) => (
+            <ListGroup.Item
+              action
+              href={`#link${index + 1}`}
+              key={index}
+            >
+              {recipe.recipe.label}
+            </ListGroup.Item>
+          ))}
+        </ListGroup>
+      )}
     </>
   );
 }

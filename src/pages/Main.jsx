@@ -3,11 +3,18 @@ import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import InputGroup from "react-bootstrap/InputGroup";
 import ListGroup from "react-bootstrap/ListGroup";
+import Recipe from './Recipe.jsx';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Link,
+  useParams
+} from "react-router-dom";
 
 export default function Main() {
   const [searchText, setSearchText] = useState("");
   const [data, setData] = useState([]);
-  const [buttonClicked, setButtonClicked] = useState(false);
 
   const url = `https://edamam-recipe-search.p.rapidapi.com/search?q=${searchText}&r=5`;
   const options = {
@@ -34,16 +41,14 @@ export default function Main() {
   };
 
   const handleButtonClick = () => {
-    setButtonClicked(true);
+    getData();
   };
 
   useEffect(() => {
-    if (buttonClicked) {
-      getData();
-    }
-  }, [buttonClicked]);
+  }, [data]);
 
   return (
+    <Router>
     <>
       <InputGroup className="mb-3">
         <Form.Control
@@ -60,12 +65,13 @@ export default function Main() {
           Buscar Receita
         </Button>
       </InputGroup>
-      {buttonClicked && (
+      {data && (
         <ListGroup defaultActiveKey="#link1">
           {data.map((recipe, index) => (
             <ListGroup.Item
               action
-              href={`#link${index + 1}`}
+              href={`to={/${index + 1}}`}
+              // href={<Recipe />}
               key={index}
             >
               {recipe.recipe.label}
@@ -73,6 +79,12 @@ export default function Main() {
           ))}
         </ListGroup>
       )}
+      <Routes>
+        <Route 
+          path="/:id"
+          element={<Recipe />} /> 
+      </Routes>
     </>
+    </Router>
   );
 }
